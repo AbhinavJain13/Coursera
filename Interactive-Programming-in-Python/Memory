@@ -1,0 +1,66 @@
+# implementation of card game - Memory
+
+import simplegui
+import random
+
+# helper function to initialize globals
+def new_game():
+    global Deck, exposed, state, prev_card1, prev_card2, turn
+    Deck = []
+    exposed = []
+    state = 0
+    prev_card1 = 0
+    prev_card2 = 0
+    turn = 0
+    Deck = range(0,8) + range(0,8)
+    exposed = ["FALSE", "FALSE", "FALSE", "FALSE","FALSE", "FALSE", "FALSE", "FALSE","FALSE", "FALSE", "FALSE", "FALSE","FALSE", "FALSE", "FALSE", "FALSE"]
+    random.shuffle(Deck)
+
+     
+# define event handlers
+def mouseclick(pos):
+    global exposed, state, prev_card1, prev_card2, turn
+    index = pos[0] // 50
+    # add game state logic here
+    if not(exposed[index] == "TRUE"):
+        if state == 0:
+            state = 1
+            exposed[index] = "TRUE"
+            prev_card1 = index
+        elif state == 1:
+            state = 2
+            prev_card2 = index
+            exposed[index] = "TRUE"
+        else:
+            state = 1
+            if not(Deck[prev_card1] == Deck[prev_card2]):
+                exposed[prev_card1] = "FALSE"
+                exposed[prev_card2] = "FALSE"
+            exposed[index] = "TRUE"
+            prev_card1 = index
+        turn += 1
+        
+# cards are logically 50x100 pixels in size    
+def draw(canvas):
+    count = 0
+    for number in Deck:
+        if exposed[count] == "FALSE":
+            canvas.draw_polygon([[(0 + 50 * count), 0], [(0 + 50 * count), 99], [(50 + 50 * count), 99], [(50 + 50 * count), 0] ],1, 'Black','Green')
+        else:
+            canvas.draw_text(str(number),[(count*50 + 15),60],40,"White")
+        
+        count += 1
+    label.set_text("Turns = " + str(turn))
+
+# create frame and add a button and labels
+frame = simplegui.create_frame("Memory", 800, 100)
+frame.add_button("Reset", new_game)
+label = frame.add_label("Turns = 0")
+
+# register event handlers
+frame.set_mouseclick_handler(mouseclick)
+frame.set_draw_handler(draw)
+
+# get things rolling
+new_game()
+frame.start()
